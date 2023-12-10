@@ -32,9 +32,13 @@ router.get("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const affectedRows = await service.deleteUserById(req.params.id);
+    let affectedRows;
+    affectedRows = await service.deleteUserMessages(req.params.id);
+    affectedRows = await service.deleteUserConversations(req.params.id);
+
+    affectedRows = await service.deleteUserById(req.params.id);
     if (affectedRows === 0) {
-      throw new Error("This user can't be deleted");
+      throw new Error("This user can't be deleted USER");
     }
     res.status(200).send({ success: "Deleted successfully" });
   } catch (error) {
@@ -69,12 +73,27 @@ router.put("/:id", async (req, res) => {
     const data = req.body;
     const id = req.params.id;
     const user = await service.getUserById(id);
+    let updatedData = { ...data };
+
+    const newHashedPassword = await bcrypt.hash(data.password, 10);
+
+    const verifyPassword = await bcrypt.compare(
+      newHashedPassword,
+      user.password
+    );
+
+    if (!verifyPassword) {
+      updatedData = { ...data, password: newHashedPassword };
+    }
 
     if (user === undefined) {
       throw new Error("User not found");
     }
 
-    const affectedRows = await service.updateUser({ ...user, ...data }, id);
+    const affectedRows = await service.updateUser(
+      { ...user, ...updatedData },
+      id
+    );
 
     if (affectedRows === 0) {
       throw new Error("This user can't be updated");
@@ -122,6 +141,7 @@ router.post("/sign-in", async (req, res) => {
         id: user.id,
         email: user.email,
         full_name: user.full_name,
+        password: user.password,
         token: user.token,
       },
     });

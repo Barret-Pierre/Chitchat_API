@@ -47,6 +47,13 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     users = users.filter((user) => user.socketId !== socket.id);
     io.emit("getUsers", users);
+    io.emit("disconnectUser");
+  });
+
+  socket.on("userDeleted", (id) => {
+    console.log("userDeleted received");
+    io.emit("getUsers", users);
+    io.emit("deletedUser", id);
   });
 
   socket.on(
