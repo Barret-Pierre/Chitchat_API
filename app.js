@@ -55,6 +55,10 @@ io.on("connection", (socket) => {
     io.emit("getUsersWhenOneDeleted", users);
   });
 
+  socket.on("userCreated", () => {
+    io.emit("getUsersWhenOneCreated");
+  });
+
   socket.on(
     "sendMessage",
     ({ id, sender_id, receiver_id, content, updated_at, conversation_id }) => {
