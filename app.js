@@ -55,8 +55,8 @@ io.on("connection", (socket) => {
     io.emit("getUsersWhenOneDeleted", users);
   });
 
-  socket.on("userCreated", () => {
-    io.emit("getUsersWhenOneCreated");
+  socket.on("userCreatedOrUpdate", () => {
+    io.emit("getUsersWhenOneCreatedOrUpdate");
   });
 
   socket.on(
