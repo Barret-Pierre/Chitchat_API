@@ -5,7 +5,7 @@ const app = express();
 require("express-async-errors");
 const io = require("socket.io")(4080, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "http://16.16.211.19/",
   },
 });
 
@@ -83,7 +83,6 @@ io.on("connection", (socket) => {
       }
     }
   );
-  // io.emit("getUsers", socket.userId);
 });
 
 // Database services

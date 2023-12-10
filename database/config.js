@@ -1,10 +1,10 @@
 const mysql = require("mysql2/promise");
 
 const mysqlPool = mysql.createPool({
-  host: "localhost",
-  user: "chitchat-admin",
-  password: "Azerty123456?",
-  database: "chitchat_api",
+  host: "51.20.79.100",
+  user: "admin",
+  password: "password",
+  database: "test",
 });
 
 module.exports = mysqlPool;
