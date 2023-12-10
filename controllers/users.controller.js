@@ -32,13 +32,9 @@ router.get("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    let affectedRows;
-    affectedRows = await service.deleteUserMessages(req.params.id);
-    affectedRows = await service.deleteUserConversations(req.params.id);
-
-    affectedRows = await service.deleteUserById(req.params.id);
+    const affectedRows = await service.deleteUserById(req.params.id);
     if (affectedRows === 0) {
-      throw new Error("This user can't be deleted USER");
+      throw new Error("This user can't be deleted");
     }
     res.status(200).send({ success: "Deleted successfully" });
   } catch (error) {
@@ -62,8 +58,16 @@ router.post("/sign-up", async (req, res) => {
       throw new Error("This user can't be added");
     }
 
-    res.status(201).send({ success: "User added successfully" });
+    res.status(201).send({ success: "Votre compte à été créer avec succès" });
   } catch (error) {
+    if (error.message.includes("users.email_UNIQUE")) {
+      error.message = "Cette adress email est déjà liée à un compte";
+    }
+
+    if (error.message.includes("users.full_name_UNIQUE")) {
+      error.message = "Ce nom est déjà utilisé";
+    }
+
     res.status(404).send({ error: error.message });
   }
 });
@@ -73,21 +77,23 @@ router.put("/:id", async (req, res) => {
     const data = req.body;
     const id = req.params.id;
     const user = await service.getUserById(id);
-    let updatedData = { ...data };
 
-    const newHashedPassword = await bcrypt.hash(data.password, 10);
-
-    const verifyPassword = await bcrypt.compare(
-      newHashedPassword,
-      user.password
-    );
-
-    if (!verifyPassword) {
-      updatedData = { ...data, password: newHashedPassword };
-    }
+    console.log(data);
 
     if (user === undefined) {
       throw new Error("User not found");
+    }
+
+    let updatedData = { ...data };
+
+    if (data.password) {
+      const newHashedPassword = await bcrypt.hash(data.password, 10);
+
+      if (newHashedPassword) {
+        updatedData = { ...data, password: newHashedPassword };
+      } else {
+        throw new Error();
+      }
     }
 
     const affectedRows = await service.updateUser(
@@ -101,7 +107,14 @@ router.put("/:id", async (req, res) => {
 
     res.status(200).send({ success: "User updated successfully" });
   } catch (error) {
-    console.error(error);
+    if (error.message.includes("users.email_UNIQUE")) {
+      error.message = "Cette adress email est déjà liée à un compte";
+    }
+
+    if (error.message.includes("users.full_name_UNIQUE")) {
+      error.message = "Ce nom est déjà utilisé";
+    }
+
     res.status(404).send({ error: error.message });
   }
 });
@@ -112,14 +125,13 @@ router.post("/sign-in", async (req, res) => {
     const user = await service.getUserByEmail(data.email);
 
     if (user === undefined) {
-      throw new Error("User not found");
+      throw new Error("Mauvais identifiants");
     }
 
     const verifyPassword = await bcrypt.compare(data.password, user.password);
 
-    console.log(verifyPassword);
     if (!verifyPassword) {
-      throw new Error("Oups bad credentials");
+      throw new Error("Mauvais identifiants");
     }
 
     const payload = { userId: user.id, email: user.email };

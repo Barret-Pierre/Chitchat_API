@@ -50,10 +50,13 @@ io.on("connection", (socket) => {
     io.emit("disconnectUser");
   });
 
-  socket.on("userDeleted", (id) => {
-    console.log("userDeleted received");
-    io.emit("getUsers", users);
-    io.emit("deletedUser", id);
+  socket.on("userDeleted", () => {
+    users = users.filter((user) => user.socketId !== socket.id);
+    io.emit("getUsersWhenOneDeleted", users);
+  });
+
+  socket.on("userCreatedOrUpdate", () => {
+    io.emit("getUsersWhenOneCreatedOrUpdate");
   });
 
   socket.on(
