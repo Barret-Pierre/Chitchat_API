@@ -77,21 +77,23 @@ router.put("/:id", async (req, res) => {
     const data = req.body;
     const id = req.params.id;
     const user = await service.getUserById(id);
-    let updatedData = { ...data };
 
-    const newHashedPassword = await bcrypt.hash(data.password, 10);
-
-    const verifyPassword = await bcrypt.compare(
-      newHashedPassword,
-      user.password
-    );
-
-    if (!verifyPassword) {
-      updatedData = { ...data, password: newHashedPassword };
-    }
+    console.log(data);
 
     if (user === undefined) {
       throw new Error("User not found");
+    }
+
+    let updatedData = { ...data };
+
+    if (data.password) {
+      const newHashedPassword = await bcrypt.hash(data.password, 10);
+
+      if (newHashedPassword) {
+        updatedData = { ...data, password: newHashedPassword };
+      } else {
+        throw new Error();
+      }
     }
 
     const affectedRows = await service.updateUser(
@@ -105,7 +107,14 @@ router.put("/:id", async (req, res) => {
 
     res.status(200).send({ success: "User updated successfully" });
   } catch (error) {
-    console.error(error);
+    if (error.message.includes("users.email_UNIQUE")) {
+      error.message = "Cette adress email est déjà liée à un compte";
+    }
+
+    if (error.message.includes("users.full_name_UNIQUE")) {
+      error.message = "Ce nom est déjà utilisé";
+    }
+
     res.status(404).send({ error: error.message });
   }
 });
