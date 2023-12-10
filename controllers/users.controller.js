@@ -58,8 +58,16 @@ router.post("/sign-up", async (req, res) => {
       throw new Error("This user can't be added");
     }
 
-    res.status(201).send({ success: "User added successfully" });
+    res.status(201).send({ success: "Votre compte à été créer avec succès" });
   } catch (error) {
+    if (error.message.includes("users.email_UNIQUE")) {
+      error.message = "Cette adress email est déjà liée à un compte";
+    }
+
+    if (error.message.includes("users.full_name_UNIQUE")) {
+      error.message = "Ce nom est déjà utilisé";
+    }
+
     res.status(404).send({ error: error.message });
   }
 });
@@ -108,13 +116,13 @@ router.post("/sign-in", async (req, res) => {
     const user = await service.getUserByEmail(data.email);
 
     if (user === undefined) {
-      throw new Error("User not found");
+      throw new Error("Mauvais identifiants");
     }
 
     const verifyPassword = await bcrypt.compare(data.password, user.password);
 
     if (!verifyPassword) {
-      throw new Error("Oups bad credentials");
+      throw new Error("Mauvais identifiants");
     }
 
     const payload = { userId: user.id, email: user.email };
