@@ -32,13 +32,9 @@ router.get("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    let affectedRows;
-    affectedRows = await service.deleteUserMessages(req.params.id);
-    affectedRows = await service.deleteUserConversations(req.params.id);
-
-    affectedRows = await service.deleteUserById(req.params.id);
+    const affectedRows = await service.deleteUserById(req.params.id);
     if (affectedRows === 0) {
-      throw new Error("This user can't be deleted USER");
+      throw new Error("This user can't be deleted");
     }
     res.status(200).send({ success: "Deleted successfully" });
   } catch (error) {
@@ -117,7 +113,6 @@ router.post("/sign-in", async (req, res) => {
 
     const verifyPassword = await bcrypt.compare(data.password, user.password);
 
-    console.log(verifyPassword);
     if (!verifyPassword) {
       throw new Error("Oups bad credentials");
     }

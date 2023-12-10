@@ -22,31 +22,6 @@ module.exports.getUserByEmail = async (email) => {
   return results;
 };
 
-module.exports.deleteUserConversations = async (id) => {
-  try {
-    const [{ affectedRows }] = await mysqlPool.query(
-      "DELETE FROM Conversations WHERE user_id_1 = ? OR user_id_2 = ?",
-      [id, id]
-    );
-    return affectedRows;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-module.exports.deleteUserMessages = async (id) => {
-  try {
-    const [{ affectedRows }] = await mysqlPool.query(
-      "DELETE FROM Messages WHERE sender_id = ?",
-      [id]
-    );
-    return affectedRows;
-  } catch (error) {
-    console.log(error);
-  }
-  return affectedRows;
-};
-
 module.exports.deleteUserById = async (id) => {
   const [{ affectedRows }] = await mysqlPool.query(
     "DELETE FROM Users WHERE id = ?",
